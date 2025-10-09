@@ -1,35 +1,36 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
-import BotonEliminarProducto from "./BotonEliminarProducto.js";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
+import BotonEliminarEdad from "./BotonEliminarEdad.js";
+import BotonEditarEdad from "./BotonEditarEdad.js";
 
-const TablaProductos = ({ productos, eliminarProducto, editarProducto }) => {
+const TablaEdades = ({ edades, eliminarEdad, cargarDatos }) => {
   return (
     <View style={styles.container}>
-      <Text style={styles.titulo}>Tabla de Productos</Text>
+      <Text style={styles.titulo}>Tabla de Edades</Text>
 
       {/* Encabezado de la tabla */}
       <View style={[styles.fila, styles.encabezado]}>
         <Text style={[styles.celda, styles.textoEncabezado]}>Nombre</Text>
-        <Text style={[styles.celda, styles.textoEncabezado]}>Precio</Text>
+        <Text style={[styles.celda, styles.textoEncabezado]}>Edad</Text>
         <Text style={[styles.celda, styles.textoEncabezado]}>Acciones</Text>
       </View>
 
       {/* Contenido de la tabla */}
       <ScrollView>
-        {productos.map((item) => (
+        {edades.map((item) => (
           <View key={item.id} style={styles.fila}>
             <Text style={styles.celda}>{item.nombre}</Text>
-            <Text style={styles.celda}>C${item.precio}</Text>
+            <Text style={styles.celda}>{item.edad} años</Text>
             {/* Celda de acciones */}
-            <View style={[styles.celdaAcciones]}>
-              <TouchableOpacity
-                      style={styles.botonActualizar}
-                      onPress={() => editarProducto(item)}
-                    >
-                      <Text>✏️</Text>
-                    </TouchableOpacity>
-                    <BotonEliminarProducto id={item.id} eliminarProducto={eliminarProducto} />
-                  </View>
+            <View style={styles.celdaAcciones}>
+              <BotonEditarEdad
+                id={item.id}
+                nombreInicial={item.nombre}
+                edadInicial={item.edad}
+                cargarDatos={cargarDatos}
+              />
+              <BotonEliminarEdad id={item.id} eliminarEdad={eliminarEdad} />
+            </View>
           </View>
         ))}
       </ScrollView>
@@ -41,13 +42,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    alignSelf: "stretch"
+    alignSelf: "stretch",
   },
 
-  titulo: { 
-    fontSize: 22, 
-    fontWeight: "bold", 
-    marginBottom: 10 
+  titulo: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 10,
   },
 
   fila: {
@@ -75,21 +76,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
-  
+
   textoEncabezado: {
     fontWeight: "bold",
     fontSize: 17,
     textAlign: "center",
   },
-
-    botonActualizar: {
-    padding: 4,
-    borderRadius: 5,
-    alignItems: "center",
-    justifyContent: 'center',
-    alignSelf: 'center',
-    backgroundColor: '#99c99aff'
-  }
 });
 
-export default TablaProductos;
+export default TablaEdades;

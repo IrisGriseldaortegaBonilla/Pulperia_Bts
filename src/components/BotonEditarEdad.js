@@ -3,22 +3,22 @@ import { View, Text, TouchableOpacity, Modal, TextInput, StyleSheet } from "reac
 import { db } from "../database/firebaseconfig.js";
 import { doc, updateDoc } from "firebase/firestore";
 
-const BotonEditarProducto = ({ id, nombreInicial, precioInicial, cargarDatos }) => {
+const BotonEditarEdad = ({ id, nombreInicial, edadInicial, cargarDatos }) => {
   const [visible, setVisible] = useState(false);
   const [nombre, setNombre] = useState(nombreInicial);
-  const [precio, setPrecio] = useState(precioInicial ? precioInicial.toString() : "");
+  const [edad, setEdad] = useState(edadInicial ? edadInicial.toString() : "");
 
   const guardarCambios = async () => {
     try {
-      const productoRef = doc(db, "Productos", id);
-      await updateDoc(productoRef, {
+      const edadRef = doc(db, "Edades", id);
+      await updateDoc(edadRef, {
         nombre: nombre,
-        precio: Number(precio),
+        edad: Number(edad),
       });
       setVisible(false);
       cargarDatos(); // recargar lista después de editar
     } catch (error) {
-      console.error("Error al editar producto:", error);
+      console.error("Error al editar edad:", error);
     }
   };
 
@@ -33,7 +33,7 @@ const BotonEditarProducto = ({ id, nombreInicial, precioInicial, cargarDatos }) 
       <Modal visible={visible} transparent animationType="fade">
         <View style={styles.overlay}>
           <View style={styles.modal}>
-            <Text style={styles.titulo}>Editar Producto</Text>
+            <Text style={styles.titulo}>Editar Edad</Text>
 
             <TextInput
               style={styles.input}
@@ -43,10 +43,10 @@ const BotonEditarProducto = ({ id, nombreInicial, precioInicial, cargarDatos }) 
             />
             <TextInput
               style={styles.input}
-              placeholder="Precio"
+              placeholder="Edad"
               keyboardType="numeric"
-              value={precio}
-              onChangeText={setPrecio}
+              value={edad}
+              onChangeText={setEdad}
             />
 
             <View style={styles.fila}>
@@ -127,4 +127,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BotonEditarProducto;
+export default BotonEditarEdad;
