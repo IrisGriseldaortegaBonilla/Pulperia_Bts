@@ -1,23 +1,23 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Button } from "react-native"; // 👈 importamos Button
 import { db } from "../database/firebaseconfig.js";
-import { collection, getDocs, doc, deleteDoc, addDoc, updateDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, deleteDoc, addDoc, updateDoc } from "firebase/firestore";
 import ListaProductos from "../components/ListaProductos";
 import FormularioProductos from "../components/FormularioProductos";
 import TablaProductos from "../components/TablaProductos.js";
 
-const Productos = () => {
+const Productos = ({ cerrarSesion }) => {  // 👈 recibe la función por parámetro
   const [productos, setProductos] = useState([]);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [productoId, setProductoId] = useState(null);
   const [nuevoProducto, setNuevoProducto] = useState({
     nombre: "",
     precio: "",
-    });
+  });
 
   const cargarDatos = async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, "Productos")); 
+      const querySnapshot = await getDocs(collection(db, "Productos"));
       const data = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -29,33 +29,31 @@ const Productos = () => {
     }
   };
 
-    const eliminarProducto = async (id) => {
+  const eliminarProducto = async (id) => {
     try {
       await deleteDoc(doc(db, "Productos", id));
-      cargarDatos(); // recarga lista 
+      cargarDatos();
     } catch (error) {
       console.error("Error al eliminar:", error);
     }
   };
 
-    const manejoCambio = (nombre, valor) => {
+  const manejoCambio = (nombre, valor) => {
     setNuevoProducto((prev) => ({
       ...prev,
       [nombre]: valor,
     }));
   };
 
-    const guardarProducto = async () => {
+  const guardarProducto = async () => {
     try {
       if (nuevoProducto.nombre && nuevoProducto.precio) {
-
         await addDoc(collection(db, "Productos"), {
           nombre: nuevoProducto.nombre,
           precio: parseFloat(nuevoProducto.precio),
         });
-        cargarDatos(); //Recarga lista
-
-        setNuevoProducto({nombre: "", precio: ""});
+        cargarDatos();
+        setNuevoProducto({ nombre: "", precio: "" });
       } else {
         alert("Por favor, complete todos los campos.");
       }
@@ -64,21 +62,17 @@ const Productos = () => {
     }
   };
 
-    const actualizarProducto = async () => {
-    try{
-      if(nuevoProducto.nombre && nuevoProducto.precio) {
-        
+  const actualizarProducto = async () => {
+    try {
+      if (nuevoProducto.nombre && nuevoProducto.precio) {
         await updateDoc(doc(db, "Productos", productoId), {
           nombre: nuevoProducto.nombre,
           precio: parseFloat(nuevoProducto.precio),
         });
-
-        setNuevoProducto({nombre: "", precio: ""});
-
-        setModoEdicion(false); //Volver al modo registro
+        setNuevoProducto({ nombre: "", precio: "" });
+        setModoEdicion(false);
         setProductoId(null);
-
-        cargarDatos(); //Recargar Lista
+        cargarDatos();
       } else {
         alert("Por favor, complete todos los campos");
       }
@@ -87,13 +81,13 @@ const Productos = () => {
     }
   };
 
-    const editarProducto = (producto) => {
+  const editarProducto = (producto) => {
     setNuevoProducto({
       nombre: producto.nombre,
       precio: producto.precio.toString(),
     });
     setProductoId(producto.id);
-    setModoEdicion(true)
+    setModoEdicion(true);
   };
 
   useEffect(() => {
@@ -102,18 +96,23 @@ const Productos = () => {
 
   return (
     <View style={styles.container}>
+      {/* 👇 Botón para cerrar sesión, encima del formulario */}
+      <Button title="Cerrar Sesión" onPress={cerrarSesion} color="#d9534f" />
+
       <FormularioProductos
-       nuevoProducto={nuevoProducto}
-       manejoCambio={manejoCambio}
-       guardarProducto={guardarProducto}
-       actualizarProducto={actualizarProducto}
-       modoEdicion={modoEdicion}
-       />
+        nuevoProducto={nuevoProducto}
+        manejoCambio={manejoCambio}
+        guardarProducto={guardarProducto}
+        actualizarProducto={actualizarProducto}
+        modoEdicion={modoEdicion}
+      />
+
       <ListaProductos productos={productos} />
-      <TablaProductos 
-      productos={productos} 
-      eliminarProducto={eliminarProducto}
-      editarProducto={editarProducto}
+
+      <TablaProductos
+        productos={productos}
+        eliminarProducto={eliminarProducto}
+        editarProducto={editarProducto}
       />
     </View>
   );

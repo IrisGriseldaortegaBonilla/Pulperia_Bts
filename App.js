@@ -1,23 +1,48 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet, TouchableOpacity, Text } from "react-native";
 import Productos from "./src/views/Productos";
 import Clientes from "./src/views/Clientes";
 import Promedio from "./src/views/Promedio";
+import Usuarios from "./src/views/Usuarios";
 import Encabezado from "./src/components/Encabezado";
+import Login from "./src/views/Login";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { auth } from "./src/database/firebaseconfig";
 
 export default function App() {
+  const [usuario, setUsuario] = useState(null); // ⚡ null por defecto
   const [pantalla, setPantalla] = useState("productos");
 
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUsuario(user);
+    });
+    return unsubscribe;
+  }, []);
+
+  const cerrarSesion = async () => {
+    await signOut(auth);
+    setUsuario(null);
+  };
+
+  // Mostrar Login si no hay usuario
+  if (!usuario) {
+    return <Login onLoginSuccess={() => setUsuario(auth.currentUser)} />;
+  }
+
+  // Mostrar la app principal si hay usuario
   const renderPantalla = () => {
     switch (pantalla) {
       case "productos":
-        return <Productos />;
+        return <Productos cerrarSesion={cerrarSesion} />;
       case "clientes":
         return <Clientes />;
       case "promedio":
         return <Promedio />;
+      case "usuarios":
+        return <Usuarios />;
       default:
-        return <Productos />;
+        return <Productos cerrarSesion={cerrarSesion} />;
     }
   };
 
@@ -30,7 +55,9 @@ export default function App() {
             ? "Gestión de Productos"
             : pantalla === "clientes"
             ? "Gestión de Clientes"
-            : "Promedio"
+            : pantalla === "promedio"
+            ? "Promedios"
+            : "Gestión de Usuarios"
         }
       />
 
@@ -55,6 +82,13 @@ export default function App() {
           onPress={() => setPantalla("promedio")}
         >
           <Text style={styles.textoBoton}>Promedios</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.boton, pantalla === "usuarios" && styles.activo]}
+          onPress={() => setPantalla("usuarios")}
+        >
+          <Text style={styles.textoBoton}>Usuarios</Text>
         </TouchableOpacity>
       </View>
 
