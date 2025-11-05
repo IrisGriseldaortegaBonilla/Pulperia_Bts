@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet,Button} from 'react-native';
 import { db } from '../database/firebaseconfig.js';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import ListaClientes from '../components/ListaClientes.js';
 import FormularioClientes from '../components/FormularioClientes.js';
 import TablaClientes from '../components/TablaClientes.js';
+import * as FileSystem from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
+import * as Clipboard from "expo-clipboard";
 
 const Clientes = () => {
   const [clientes, setClientes] = useState([]);
@@ -25,6 +28,68 @@ const Clientes = () => {
     }
   };
 
+  const cargarDatosFirebase = async (nombreColeccion) => {
+    if (!nombreColeccion || typeof nombreColeccion !== 'string') {
+      console.error("Error: Se requiere un nombre de colección válido.");
+      return;
+    }
+  
+    try {
+      const datosExportados = {};
+  
+      // Obtener la referencia a la colección específica
+      const snapshot = await getDocs(collection(db, nombreColeccion));
+  
+      // Mapear los documentos y agregarlos al objeto de resultados
+      datosExportados[nombreColeccion] = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+  
+      return datosExportados;
+    } catch (error) {
+      console.error(`Error extrayendo datos de la colección '${nombreColeccion}':`, error);
+    }
+  };
+  
+  const exportarDatos = async () => {
+    try {
+      const datos = await cargarDatosFirebase("Clientes");
+      console.log("Datos cargados:", datos);
+  
+      // Formatea los datos para el archivo y el portapapeles
+      const jsonString = JSON.stringify(datos, null, 2);
+      const baseFileName = "datos_firebase.txt";
+  
+      // Copiar datos al portapapeles
+      await Clipboard.setStringAsync(jsonString);
+      console.log("Datos (JSON) copiados al portapapeles.");
+  
+      // Verificar si la función de compartir está disponible
+      if (!(await Sharing.isAvailableAsync())) {
+        alert("La función Compartir/Guardar no está disponible en tu dispositivo");
+        return;
+      }
+  
+      // Guardar el archivo temporalmente
+      const fileUri = FileSystem.cacheDirectory + baseFileName;
+  
+      // Escribir el contenido JSON en el caché temporal
+      await FileSystem.writeAsStringAsync(fileUri, jsonString);
+  
+      // Abrir el diálogo de compartir
+      await Sharing.shareAsync(fileUri, {
+        mimeType: "text/plain",
+        dialogTitle: "Compartir datos de Firebase (JSON)",
+      });
+  
+      alert("Datos copiados al portapapeles y listos para compartir.");
+    } catch (error) {
+      console.error("Error al exportar y compartir:", error);
+      alert("Error al exportar y compartir: " + error.message);
+    }
+  };
+
   // Eliminar cliente
   const eliminarCliente = async (id) => {
     try{
@@ -41,12 +106,16 @@ const Clientes = () => {
 
   return (
     <View style={styles.container}>
+     <View style={{ marginVertical: 10 }}>
+            <Button title="Exportar" onPress={exportarDatos} />
+            </View>
       <FormularioClientes cargarDatos={cargarDatos}/>
       <ListaClientes clientes={clientes}/>
       <TablaClientes
         clientes={clientes}
         eliminarCliente={eliminarCliente}
       />
+
     </View>
   );
 };
