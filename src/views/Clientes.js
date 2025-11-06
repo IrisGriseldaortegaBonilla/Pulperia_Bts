@@ -89,7 +89,7 @@ const Clientes = () => {
       alert("Error al exportar y compartir: " + error.message);
     }
   };
-
+   
   // Eliminar cliente
   const eliminarCliente = async (id) => {
     try{
