@@ -4,13 +4,14 @@ import Productos from "./src/views/Productos";
 import Clientes from "./src/views/Clientes";
 import Promedio from "./src/views/Promedio";
 import Usuarios from "./src/views/Usuarios";
+import ProductosRealtime from "./src/views/ProductosRealtime"; // ✅ Nueva vista
 import Encabezado from "./src/components/Encabezado";
 import Login from "./src/views/Login";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "./src/database/firebaseconfig";
 
 export default function App() {
-  const [usuario, setUsuario] = useState(null); // ⚡ null por defecto
+  const [usuario, setUsuario] = useState(null);
   const [pantalla, setPantalla] = useState("productos");
 
   useEffect(() => {
@@ -25,12 +26,12 @@ export default function App() {
     setUsuario(null);
   };
 
-  // Mostrar Login si no hay usuario
+  // 🔹 Mostrar Login si no hay usuario
   if (!usuario) {
     return <Login onLoginSuccess={() => setUsuario(auth.currentUser)} />;
   }
 
-  // Mostrar la app principal si hay usuario
+  // 🔹 Mostrar la app principal si hay usuario
   const renderPantalla = () => {
     switch (pantalla) {
       case "productos":
@@ -41,6 +42,8 @@ export default function App() {
         return <Promedio />;
       case "usuarios":
         return <Usuarios />;
+      case "productosRealtime": // ✅ Nueva vista agregada
+        return <ProductosRealtime />;
       default:
         return <Productos cerrarSesion={cerrarSesion} />;
     }
@@ -48,7 +51,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      {/* Encabezado */}
+      {/* 🔹 Encabezado */}
       <Encabezado
         titulo={
           pantalla === "productos"
@@ -57,11 +60,13 @@ export default function App() {
             ? "Gestión de Clientes"
             : pantalla === "promedio"
             ? "Promedios"
-            : "Gestión de Usuarios"
+            : pantalla === "usuarios"
+            ? "Gestión de Usuarios"
+            : "Productos Realtime"
         }
       />
 
-      {/* Menú de navegación */}
+      {/* 🔹 Menú de navegación */}
       <View style={styles.menu}>
         <TouchableOpacity
           style={[styles.boton, pantalla === "productos" && styles.activo]}
@@ -90,9 +95,20 @@ export default function App() {
         >
           <Text style={styles.textoBoton}>Usuarios</Text>
         </TouchableOpacity>
+
+        {/* ✅ Nuevo botón para ProductosRealtime */}
+        <TouchableOpacity
+          style={[
+            styles.boton,
+            pantalla === "productosRealtime" && styles.activo,
+          ]}
+          onPress={() => setPantalla("productosRealtime")}
+        >
+          <Text style={styles.textoBoton}>Productos RT</Text>
+        </TouchableOpacity>
       </View>
 
-      {/* Contenido dinámico */}
+      {/* 🔹 Contenido dinámico */}
       <View style={styles.contenido}>{renderPantalla()}</View>
     </View>
   );
